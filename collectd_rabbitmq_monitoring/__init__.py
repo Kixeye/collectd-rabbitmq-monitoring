@@ -27,6 +27,7 @@ def configure(configobj):
     global INTERVAL
     global cl
     global queues_to_count
+    global vhost
 
     config = {c.key: c.values for c in configobj.children}
     INTERVAL = config['interval'][0]
@@ -34,6 +35,10 @@ def configure(configobj):
     port = int(config['port'][0])
     username = config['username'][0]
     password = config['password'][0]
+    if 'vhost' in config:
+        vhost = config['vhost'][0]
+    else:
+        vhost = '/'
     queues_to_count = []
     if 'message_count' in config:
         queues_to_count = config['message_count']
@@ -122,7 +127,7 @@ def read(data=None):
     for queue_name in queues_to_count:
         messages_detail = None
         try:
-            messages_detail = cl.get_messages('/', queue_name)
+            messages_detail = cl.get_messages(vhost, queue_name)
         except HTTPError as err:
             collectd.error(
                 'Error Opening Queue [{}] details: {}'
